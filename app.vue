@@ -18,3 +18,6 @@ import { CollectionsResponse } from "~/types/collections";
 
 const {data} = await useFetch<CollectionsResponse>("/api/query?col=collections&orderName=collection_id&order=desc")
 </script>
+
+<style lang="scss" scoped>
+</style>
