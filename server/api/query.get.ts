@@ -4,8 +4,8 @@ import { queryByCollection } from "../lib/firestore";
 export default defineEventHandler(async (event) => {
 	try {
     const query = getQuery(event);
-    const docs = await queryByCollection(query.col as string);
-    return { result: docs };
+    const docs = await queryByCollection(query.col as string, query.orderName as string, query.order as "desc" | "asc");
+    return {collections: docs};
   } catch (error) {
     return { result: [], error: error.message };
   } 
