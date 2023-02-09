@@ -1,4 +1,4 @@
-type Weapons = {
+export type Weapons = {
   image_url: string;
   jp_weapon_name: string;
   vp: number;
@@ -6,7 +6,7 @@ type Weapons = {
   weapon_name: string;
 }
 
-type Collections = {
+export type Collections = {
   collection_id: string;
   created_at: Date;
   id: string;

@@ -2,13 +2,13 @@
   <div>
     <!-- <NuxtWelcome /> -->
     <div v-for="(collection, index) in data?.collections" :key="collection.collection_id">
-      <h3>{{collection.id}}</h3>
-      <div>
+      <!-- <div>
         <div v-for="(weapon, index) in collection.weapons" :key="weapon.weapon_id">
           <p>{{weapon.jp_weapon_name}}</p>
           <img :src="`images${weapon.image_url}`" alt="" />
         </div>
-      </div>
+      </div> -->
+      <Accordion :collections="collection" />
     </div>
   </div>
 </template>
