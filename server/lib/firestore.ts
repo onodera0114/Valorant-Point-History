@@ -11,14 +11,15 @@ import {
     setDoc,
     collectionGroup,
     Timestamp,
+    orderBy,
   } from "firebase/firestore";
 import { firestoreDb } from "./firebase";
 
-export const queryByCollection = async (col: string) => {
+export const queryByCollection = async (col: string, orderName: string, order: "desc" | "asc" = "asc") => {
 // @ts-ignore
 const colRef = collection(firestoreDb, col);
 
-const snapshot = await getDocs(colRef);
+const snapshot = await getDocs(query(colRef, orderBy(orderName, order)));
 
 const docs = Array.from(snapshot.docs).map((doc) => {
     return {
