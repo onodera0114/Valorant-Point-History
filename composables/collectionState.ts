@@ -1,12 +1,12 @@
 import { Ref } from "nuxt/dist/app/compat/capi";
 
 type Weapon = {
-  weapon_id: string,
+  weapon_id: number,
   purchased: boolean,
 }
 
 type Data = {
-  collection_id: string,
+  collection_id: number,
   set_purchased: boolean,
   weapons: Weapon[]
 }
