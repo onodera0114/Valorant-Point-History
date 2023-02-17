@@ -5,11 +5,57 @@ interface Props {
   collections: Collections;
 }
 const props = defineProps<Props>();
+const collectionStore = useCollectionDataStore();
+const { collectionData, setCollectionData } = collectionStore;
+const isSetPurchased = ref<boolean>(false);
+const isPurchased = ref<boolean[]>([]);
+const flag = ref(false);
+
+const checkPurchased = () => {
+  const array = new Set(isPurchased.value)
+  if(array.size === 1){
+    isSetPurchased.value = array.has(true) ? true : false;
+  }
+  else{
+    isSetPurchased.value = false;
+    flag.value = true;
+  }
+}
+
+onBeforeMount(() => {
+  const purchased = new Array(props.collections.weapons.length)
+
+  const collection = collectionData.value.data.find(value => value.collection_id === props.collections.collection_id)
+  if(collection){
+    isSetPurchased.value = collection.set_purchased;
+    collection.weapons.forEach((value, index) => {
+      isPurchased.value[index] = value.purchased
+    })
+  }
+  else{
+    purchased.fill(false);
+    isPurchased.value = purchased;
+  }
+})
+
+watch(isPurchased.value, (next, prev) => {
+  checkPurchased();
+})
+
+watch(isSetPurchased, (next, prev) => {
+  if(flag.value){
+    flag.value = false;
+  }
+  else{
+    isPurchased.value.fill(isSetPurchased.value)
+  }
+})
+
 </script>
 
 <template>
   <div class="card">
-    <v-checkbox label="セット購入" />
+    <v-checkbox label="セット購入" v-model="isSetPurchased" />
     <div class="d-flex flex-wrap justify-center">
       <div v-for="(weapon, index) in collections.weapons" :key="weapon.image_url" class="card__container">
         <p>{{`${collections.id} ${weapon.weapon_name}（${collections.jp_name}${weapon.jp_weapon_name}）`}}</p>
@@ -17,26 +63,11 @@ const props = defineProps<Props>();
           <img :src="`images${weapon.image_url}`" alt="" />
         </div>
         <p>{{`${weapon.vp}VP`}}</p>
-        <v-checkbox label="購入済み" />
+        <v-checkbox label="購入済み" v-model="isPurchased[index]" />
       </div>
     </div>
   </div>
 </template>
-
-<!--
-  data: [
-    {
-      collection_id: string,
-      set_purchased: boolean,
-      weapons: [
-        {
-          weapon_id: string,
-          purchased: boolean,
-        }
-      ]
-    },
-  ]
--->
 
 <style lang="scss" scoped>
 .card{
