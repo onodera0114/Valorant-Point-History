@@ -11,35 +11,65 @@ const isSetPurchased = ref<boolean>(false);
 const isPurchased = ref<boolean[]>([]);
 const flag = ref(false);
 
+const initIsPurchased = () => {
+  const purchased:boolean[] = new Array(props.collections.weapons.length);
+  purchased.fill(false);
+  isPurchased.value = purchased;
+}
+
+initIsPurchased();
+
 const checkPurchased = () => {
   const array = new Set(isPurchased.value)
-  if(array.size === 1){
-    isSetPurchased.value = array.has(true) ? true : false;
-  }
-  else{
-    isSetPurchased.value = false;
-    flag.value = true;
+  if(array.size !== 1){
+    if(isSetPurchased.value){
+      isSetPurchased.value = false;
+      flag.value = true;
+    }
   }
 }
 
-onBeforeMount(() => {
-  const purchased = new Array(props.collections.weapons.length)
+const updateState = () => {
+  const data = {
+    collection_id: props.collections.collection_id,
+    set_purchased: isSetPurchased.value,
+    weapons: props.collections.weapons.map((value, index) => {
+      return {
+        weapon_id: value.weapon_id,
+        purchased: isPurchased.value[index],
+      }
+    })
+  }
 
-  const collection = collectionData.value.data.find(value => value.collection_id === props.collections.collection_id)
+  const newData = [];
+  collectionData.value.data?.forEach(v => {
+    newData.push(v)
+  })
+  newData.push(data)
+
+  const uniqueData = Array.from(
+    new Map(newData.map((value) => [value.collection_id, value])).values()
+  );
+
+  setCollectionData({
+    data: uniqueData
+  })
+
+}
+
+onBeforeMount(() => {
+  const collection = collectionData.value.data?.find(value => value.collection_id === props.collections.collection_id)
   if(collection){
     isSetPurchased.value = collection.set_purchased;
     collection.weapons.forEach((value, index) => {
       isPurchased.value[index] = value.purchased
     })
   }
-  else{
-    purchased.fill(false);
-    isPurchased.value = purchased;
-  }
 })
 
 watch(isPurchased.value, (next, prev) => {
   checkPurchased();
+  updateState();
 })
 
 watch(isSetPurchased, (next, prev) => {
@@ -47,15 +77,17 @@ watch(isSetPurchased, (next, prev) => {
     flag.value = false;
   }
   else{
-    isPurchased.value.fill(isSetPurchased.value)
+    isPurchased.value.fill(isSetPurchased.value);
   }
+
+  updateState();
 })
 
 </script>
 
 <template>
   <div class="card">
-    <v-checkbox label="セット購入" v-model="isSetPurchased" />
+    <v-checkbox v-if="collections.set_vp !== 0" label="セット購入" v-model="isSetPurchased" />
     <div class="d-flex flex-wrap justify-center">
       <div v-for="(weapon, index) in collections.weapons" :key="weapon.image_url" class="card__container">
         <p>{{`${collections.id} ${weapon.weapon_name}（${collections.jp_name}${weapon.jp_weapon_name}）`}}</p>

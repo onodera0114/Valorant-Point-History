@@ -1,6 +1,9 @@
 <template>
   <div>
     <!-- <NuxtWelcome /> -->
+    <div class="point-view">
+      <p>{{ `累計消費ヴァロラントポイント：${calculatePoint}` }}</p>
+    </div>
     <div v-for="(collection, index) in data?.collections" :key="collection.collection_id">
       <Accordion :collections="collection" />
     </div>
@@ -14,6 +17,37 @@ const {data} = await useFetch<CollectionsResponse>("/api/query?col=collections&o
 const collectionStore = useCollectionDataStore();
 const { collectionData, setCollectionData } = collectionStore;
 
+const saveLocalStorage = () => {
+  const collection = collectionData.value;
+  localStorage.setItem("collectionData", JSON.stringify(collection))
+}
+
+const calculatePoint = computed(() => {
+  let point = 0;
+  if(collectionData.value && collectionData.value.data){
+    collectionData.value.data.forEach((value) => {
+    const collection = data.value?.collections.find((v, i) => v.collection_id === value.collection_id);
+    if(collection){
+      if(value.set_purchased){
+        point += collection.set_vp;
+      }
+      else{
+        value.weapons.forEach(weapon => {
+          const data = collection.weapons.find((w) => w.weapon_id === weapon.weapon_id);
+          if(data){
+            if(weapon.purchased){
+              point += data.vp;
+            }
+          }
+        })
+      }
+    }
+  })
+  }
+  saveLocalStorage();
+  return point;
+})
+
 onBeforeMount(() => {
   const storage = localStorage.getItem("collectionData");
   if(storage){
@@ -21,123 +55,10 @@ onBeforeMount(() => {
   }
 })
 
-const test = {
-  data: [
-    {
-      collection_id: "3",
-      set_purchased: false,
-      weapons: [
-        {
-          weapon_id: "3",
-          purchased: false,
-        },
-        {
-          weapon_id: "9",
-          purchased: true,
-        },
-        {
-          weapon_id: "13",
-          purchased: false,
-        },
-        {
-          weapon_id: "15",
-          purchased: false,
-        },
-        {
-          weapon_id: "18",
-          purchased: true,
-        }
-      ]
-    },
-    {
-      collection_id: "5",
-      set_purchased: true,
-      weapons: [
-        {
-          weapon_id: "1",
-          purchased: true,
-        },
-        {
-          weapon_id: "7",
-          purchased: true,
-        },
-        {
-          weapon_id: "11",
-          purchased: true,
-        },
-        {
-          weapon_id: "13",
-          purchased: true,
-        },
-        {
-          weapon_id: "18",
-          purchased: true,
-        }
-      ]
-    },
-    {
-      collection_id: "5",
-      set_purchased: false,
-      weapons: [
-        {
-          weapon_id: "1",
-          purchased: false,
-        },
-        {
-          weapon_id: "7",
-          purchased: true,
-        },
-        {
-          weapon_id: "11",
-          purchased: true,
-        },
-        {
-          weapon_id: "13",
-          purchased: true,
-        },
-        {
-          weapon_id: "18",
-          purchased: true,
-        }
-      ]
-    },
-    {
-      collection_id: "5",
-      set_purchased: true,
-      weapons: [
-        {
-          weapon_id: "1",
-          purchased: true,
-        },
-        {
-          weapon_id: "7",
-          purchased: true,
-        },
-        {
-          weapon_id: "11",
-          purchased: true,
-        },
-        {
-          weapon_id: "13",
-          purchased: true,
-        },
-        {
-          weapon_id: "18",
-          purchased: true,
-        }
-      ]
-    }
-  ]
-}
-
-onMounted(() => {
-  const uniqueUsers = Array.from(
-  new Map(test.data.map((value) => [value.collection_id, value])).values()
-);
-  console.log(uniqueUsers)
-})
-
 </script>
 
 <style lang="scss" scoped>
+.point-view{
+  text-align: center;
+}
 </style>
